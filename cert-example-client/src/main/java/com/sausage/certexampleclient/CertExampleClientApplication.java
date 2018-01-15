@@ -20,8 +20,9 @@ import java.security.KeyStore;
 @RestController
 public class CertExampleClientApplication {
 
-	@GetMapping("/forward-to-cert")
-	String forward() throws Exception {
+	private RestTemplate restTemplate;
+
+	public CertExampleClientApplication() throws Exception{
 		KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
 		keyStore.load(getClass().getResourceAsStream("/client-keystore.jks"),"password".toCharArray());
 		SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(
@@ -34,8 +35,14 @@ public class CertExampleClientApplication {
 		HttpClient httpClient = HttpClients.custom().setSSLSocketFactory(socketFactory).build();
 
 		ClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
+		restTemplate = new RestTemplate(requestFactory);
+	}
 
-		return new RestTemplate(requestFactory).getForEntity("https://localhost:8443/need-cert",String.class).getBody();
+	@GetMapping("/forward-to-cert")
+	String forward() throws Exception {
+
+
+		return restTemplate.getForEntity("https://localhost:8443/need-cert",String.class).getBody();
 	}
 
 	public static void main(String[] args) {
