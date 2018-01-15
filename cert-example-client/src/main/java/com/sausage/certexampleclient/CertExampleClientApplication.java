@@ -6,8 +6,10 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.HttpClients;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.core.io.Resource;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,13 +24,13 @@ public class CertExampleClientApplication {
 
 	private RestTemplate restTemplate;
 
-	public CertExampleClientApplication() throws Exception{
+	public CertExampleClientApplication(@Value("${cert}")Resource  certificate, @Value("${password}")String password) throws Exception{
 		KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-		keyStore.load(getClass().getResourceAsStream("/client-keystore.jks"),"password".toCharArray());
+		keyStore.load(certificate.getInputStream(),password.toCharArray());
 		SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(
 				new SSLContextBuilder()
 						.loadTrustMaterial(null, new TrustSelfSignedStrategy())
-						.loadKeyMaterial(keyStore, "password".toCharArray())
+						.loadKeyMaterial(keyStore, password.toCharArray())
 						.build(),
 				NoopHostnameVerifier.INSTANCE);
 
